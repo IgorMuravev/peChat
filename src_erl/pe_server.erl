@@ -41,7 +41,7 @@ server_loop2(Clients) ->
 				false -> ok
 			end,
 			server_loop2(Clients);
-		Uncaught ->
+		_Uncaught ->
 			server_loop2(Clients)
 	end.
 
@@ -50,13 +50,9 @@ start()->
 	if 
 		A == ok ->
 			io:fwrite(R, "[~w] Server started ~n",[calendar:local_time()]),
-			Server = spawn(?MODULE, server_loop1,[[], R]),
-			global:sync(),
-			global:register_name(srv,Server);
+			global:register_name(srv,spawn(?MODULE, server_loop1,[[], R]));
 		true -> 
-			Server = spawn(?MODULE, server_loop2,[[]]),
-			global:sync(),
-			global:register_name(srv,Server)
+			global:register_name(srv,spawn(?MODULE, server_loop2,[[]]))
 	end.
 
 stop()->

@@ -2,15 +2,14 @@
 %%-export([start/0, stop/0]).
 -compile(export_all).
 server_logfile() -> "srv.log".
-
 server_log() -> file:open(server_logfile(), [append]).
 
-notify(_,[],_)->ok;
-notify(ClientPid, [ClientPid|T] , Msg) ->
-	notify(ClientPid, T, Msg);
-notify(ClientPid, [H | T], Msg) ->
-	H ! Msg,
-	notify(ClientPid, T, Msg). 
+
+notify(_,[],_) ->ok;
+notify(X,[X|T],Msg)-> notify(X,T,Msg);
+notify(X,[H|T], Msg)->
+	H ! {cmd, {msg, self(),Msg}},
+	notify(X,T,Msg).
 
 server_loop1(Clients, LogDevice) ->
 	receive
@@ -20,9 +19,12 @@ server_loop1(Clients, LogDevice) ->
 		{cmd,{break,empty,empty}} ->
 			io:fwrite(LogDevice, "[~w] Server stopped ~n",[calendar:local_time()]),
 			file:close(LogDevice);
-		{cmd, {msg,ClientPid,Msg}} ->
-			io:fwrite(LogDevice, "[~w] Received message ~n",[calendar:local_time()]),
-			notify(ClientPid, Clients, Msg),
+		{cmd,{msg, ClientPid, Msg}} ->
+			io:fwrite(LogDevice, "[~w] Message received [~s] ~n",[calendar:local_time(), Msg]),
+			case lists:member(ClientPid,Clients) of
+				true -> notify(ClientPid, Clients, Msg);
+				false -> io:fwrite(LogDevice, "[~w] Undefined process ~w~n",[calendar:local_time(),ClientPid])
+			end,
 			server_loop1(Clients, LogDevice);
 		Uncaught ->
 			io:fwrite(LogDevice, "[~w] Uncaught message ~w~n",[calendar:local_time(), Uncaught]),
@@ -35,10 +37,13 @@ server_loop2(Clients) ->
 			server_loop2([ClientPid | Clients]);
 		{cmd,{break,empty,empty}} ->
 			ok;
-		{cmd, {msg,ClientPid,Msg}} ->
-			notify(ClientPid, Clients,Msg),
+		{cmd,{msg, ClientPid, Msg}} ->
+			case lists:member(ClientPid,Clients) of
+				true -> notify(ClientPid, Clients, Msg);
+				false -> ok
+			end,
 			server_loop2(Clients);
-		Uncaught ->
+		_Uncaught ->
 			server_loop2(Clients)
 	end.
 

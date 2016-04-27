@@ -4,7 +4,6 @@
 server_logfile() -> "srv.log".
 server_log() -> file:open(server_logfile(), [append]).
 
-
 notify(_,[],_) ->ok;
 notify(X,[X|T],Msg)-> notify(X,T,Msg);
 notify(X,[H|T], Msg)->

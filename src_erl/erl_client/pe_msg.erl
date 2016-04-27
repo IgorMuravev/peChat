@@ -4,11 +4,11 @@ connect()->
 	global:send(srv, {cmd,{connect,self(),empty}}).
 send(Msg) ->
 	global:send(srv, {cmd,{msg,self(),Msg}}).
-defualt_listener(Msg)->
+default_listener(Msg)->
 	io:format("~s~n",[Msg]).
 
 recv() ->
-	recv(default_listener).
+	recv(fun default_listener/1).
 
 recv(F) ->
 	receive

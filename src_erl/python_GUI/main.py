@@ -1,30 +1,14 @@
-import threading
-from client_form import *
+from clientForm import *
 
-class peAPI:
+def listener(form):
+	while True:
+		msgs = erlang.call(Atom(b"pe_client"), Atom(b"get_msg"), [])
+		if len(msgs) > 0:
+			for msg in msgs:
+				form.append(''.join(chr(i) for i in msg))
+		form.update()
 
-	def job(self,api):
-		api.form = client_f()
-		api.form.mainloop()
-
-	def show(self):
-		def job():
-			self.form = client_f()
-			self.form.mainloop()
-			
-		self.window_thread=threading.Thread(target=job)
-		self.window_thread.start()
-
-	def appendtext(self,msg):
-		self.form.appendtext(msg + "\n")
-
-
-def get_api():
-	return peAPI()
-
-def show_form(api):
-	api.show()
-
-def send(api, msg):
-	api.appendtext(msg)
-
+def run_gui(pid):
+	form = guiForm(pid)
+	form.after(1000,listener, form)
+	form.mainloop()

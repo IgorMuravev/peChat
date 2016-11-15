@@ -12,3 +12,17 @@ def run_gui(pid):
 	form = guiForm(pid)
 	form.after(1000,listener, form)
 	form.mainloop()
+
+"""
+import qgui
+import sys
+from PyQt4 import QtCore, QtGui
+
+app = QtGui.QApplication(sys.argv)
+MainWindow = QtGui.QMainWindow()
+ui = qgui.Ui_MainWindow()
+ui.setupUi(MainWindow)
+MainWindow.show()
+sys.exit(app.exec_()) """
+
+
